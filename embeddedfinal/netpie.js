@@ -1,19 +1,20 @@
 var x = 0;
-let on = "off";
 
 let temperature,dustLevel
 var humidity = 50 
 
-client = new Paho.MQTT.Client("mqtt.netpie.io",443,"xxx"); // The last one is Client ID
+client = new Paho.MQTT.Client("mqtt.netpie.io",443,"d88bd0e4-0a50-4c03-bd82-9aaa6c4bc94e"); // The last one is Client ID
 client.onMessageArrived = onMessageArrived;
 
 var options = {
     useSSL: true,
-    userName: "xxx", // This is token
-    password: "xxx", // This is secret
+    userName: "78Rg1vZ1uGQz3yd3UkAxB3PBJnnB7gFH", // This is token
+    password: "XYcqPXeSJBJ2NWHLL1U2qe5u6JQcrbt2", // This is secret
     onSuccess: onConnect,
     onFailure: doFail,                                                  
 }
+
+
 
 client.connect(options);
 
@@ -25,34 +26,35 @@ function doFail(e){
     console.log(e);
 }
 
-function myFunction()
+function toggleStatus()
 {
     // เป็นปุ่มที่ใช้เปิดปิดน้ำ
-    // x = document.getElementById("myText").value ;
-    // document.getElementById.innerHTML = x ;
-    // if(on == "off"){
-    //     on = "on";
-    //     document.getElementById("my-button").innerHTML = "On"
-    // }else{
-    //     on = "off";
-    //     document.getElementById("my-button").innerHTML = "Off"
-    // }
-    // mqttSend("@msg/on",on);
-    // console.log(on);
     var button = document.getElementById("my-button");
-    var block = document.getElementById("button-data-block");
-            if (button.innerHTML === "off") {
-                button.innerHTML = "on";
-                button.classList.add("on"); // เพิ่มคลาส 'on' เพื่อเปลี่ยนสีเป็นสีเขียว
-               // mqttSend("@msg/on", "on");
-            } else {
-                button.innerHTML = "off";
-                button.classList.remove("on"); // ลบคลาส 'on' เพื่อกลับไปสีแดง
-                //mqttSend("@msg/on", "off");
-            }
-            console.log(button.innerHTML);
-    onMessageArrived("")
+    if (button.innerHTML === "off") {
+        setStatus("on")
+        mqttSend("@msg/on", "on");
+    } else {
+        setStatus("off")   
+        mqttSend("@msg/on", "off");
+    }
+    console.log(button.innerHTML);
+    // onMessageArrived("")
 }
+
+function setStatus(status) {
+    var button = document.getElementById("my-button");
+    if (status == "on") {
+        button.innerHTML = "on";
+        button.classList.add("on"); // เพิ่มคลาส 'on' เพื่อเปลี่ยนสีเป็นสีเขียว
+    }
+
+    else {
+        button.innerHTML = "off";
+        button.classList.remove("on"); // ลบคลาส 'on' เพื่อกลับไปสีแดง
+    }
+}
+
+
 
 function onMessageArrived(message)
 {
@@ -61,17 +63,23 @@ function onMessageArrived(message)
 
     // ถ้าจะเทสการรับ message ให้เปิดตรงนี้
     // document.getElementById("show").innerHTML = message.payloadString;
-    // var data = message.payloadString.split(",");
-    var data = [];
-    for (var i = 0; i < 3; i++) {
-        // Generate random number between 0 and 100
-        var randomNumber = Math.floor(Math.random() * 101);
-        data.push(randomNumber);
-    }
+    var data = message.payloadString.split(",");
+    // var data = [];
+    // for (var i = 0; i < 3; i++) {
+    //     // Generate random number between 0 and 100
+    //     var randomNumber = Math.floor(Math.random() * 101);
+    //     data.push(randomNumber);
+    // }
 
     document.getElementById("temp").innerHTML = data[0] + " &deg;C";
     document.getElementById("humi").innerHTML = data[1] + " %";
-    document.getElementById("dust").innerHTML = data[2] + " %";
+    document.getElementById("dust").innerHTML = data[2] + " mg/m3";
+
+    state = data[3];
+    if (state == 1) setStatus("on")
+    else if (state == 0) setStatus("off")
+
+    console.log(data);
 }
 
 var mqttSend = function (topic,msg){
@@ -79,13 +87,3 @@ var mqttSend = function (topic,msg){
     message.destinationName = topic;
     client.send(message);
 }
-
-
-
-
-
-
-
-
-
-
